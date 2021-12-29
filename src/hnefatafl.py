@@ -9,7 +9,7 @@ def prRed(skk):
 
 class Hnefatafl:
     '''
-    Store hnefatafl game play state
+    Store hnefatafl game play and game state
     '''
 
     def __init__(self):
@@ -169,6 +169,7 @@ class Hnefatafl:
         '''
         Check to see if the king has been captured. If true, game is won by attackers.
         '''
+        return None
 
     def move(self, start, to):
         '''
