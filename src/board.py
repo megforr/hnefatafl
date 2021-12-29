@@ -13,9 +13,6 @@ class Board:
         #self.board = np.arange(0,board_size**2).reshape(board_size, board_size)
         self.board = np.zeros([self.board_size, self.board_size])
 
-    def render(self):
-        print('\n', self.board, '\n')
-
     def reset(self):
         self.board = np.zeros([self.board_size, self.board_size])
         self.board[[0, 0, self.board_size - 1, self.board_size - 1],
@@ -35,3 +32,6 @@ class Board:
             pass
 
         return self.board
+
+    # maybe instead store the locations of each of the red board pieces
+    #def red_pieces(self):
