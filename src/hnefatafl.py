@@ -18,7 +18,9 @@ class Hnefatafl:
         self.piece = piece.Piece()
 
     def render(self):
+        # TODO: Maybe add in A-G & 1-6 on the side and render as a string
         print('\nCurrent game board:\n', self.board, '\n')
+
 
     def translate(self, pos):
         '''
@@ -70,9 +72,9 @@ class Hnefatafl:
 
         return start, to
 
-    def is_updown(self, start, to):
+    def is_updown_leftright(self, start, to):
         '''
-        Check to see if the move selected is left or right only. No diagonal.
+        Check to see if the move selected is left, right, up, or down only. No diagonal.
         Either row or column difference has to be equal to 0.
 
         :param start: starting position
@@ -142,7 +144,7 @@ class Hnefatafl:
             self.is_legal(start, to)
 
         # check if moves like a rook
-        if not self.is_updown(start, to):
+        if not self.is_updown_leftright(start, to):
             print('Illegal move selected. Pieces can only move on vertical and horizontal axis.')
             print('Please select new move.')
             start, to = self.request_move()
@@ -158,8 +160,15 @@ class Hnefatafl:
         return True
 
     def is_pinch(self, start, to):
-        # check if start, to ends on either side of pinch to remove from board
+        '''
+        Check to see if move pinches an opponents player. If true, remove piece from board
+        '''
         return None
+
+    def is_king_capture(self, start, to):
+        '''
+        Check to see if the king has been captured.
+        '''
 
     def move(self, start, to):
         '''
