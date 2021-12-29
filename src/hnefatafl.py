@@ -24,7 +24,7 @@ class Hnefatafl:
 
     def translate(self, pos):
         '''
-        Translate the provided positions to computer positions
+        Translate the provided positions to computer/matrix positions
         columns = [a,b,c,d,e,f,g] (left to right)
         rows = [1,2,3,4,5,6,7] (bottom (1) to top (7))
         '''
@@ -167,7 +167,7 @@ class Hnefatafl:
 
     def is_king_capture(self, start, to):
         '''
-        Check to see if the king has been captured.
+        Check to see if the king has been captured. If true, game is won by attackers.
         '''
 
     def move(self, start, to):
@@ -207,14 +207,20 @@ if __name__ == '__main__':
         start, to = game.request_move()
         game.move(start, to)
 
+        # Gameplay with Human Choices
+            # Request move from player
+            # Translate to computer/matrix coordinates
+            # Check if move is legal
+            # Check if move captures opponent piece or king
+            # Check if game is won
+        # Improvement
+            # Store the actual location of pieces in a list
+
+        # Self-play
+            # Prepare game to play against itself (2 agents)
+            # Board representation (ohe 0,1,2) each grid of the game
+            #
 
 
 
 
-
-
-        # get move, translate move to computer coordinates
-        # check moves are legal
-            # is it the right turn? Did you move a piece you were allowed to move?
-            # Is the move legal? Did it go off the board or move over another piece?
-        # check if move captures another piece
