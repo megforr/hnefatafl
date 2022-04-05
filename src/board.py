@@ -35,3 +35,5 @@ class Board:
 
     # maybe instead store the locations of each of the red board pieces
     #def red_pieces(self):
+
+

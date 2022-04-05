@@ -1,0 +1,6 @@
+TODO:
+
+Create the board game
+* 9x9 board
+*
+* Use the starting positions from Mike's
