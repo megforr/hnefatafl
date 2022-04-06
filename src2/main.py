@@ -2,6 +2,7 @@ import numpy as np
 import random
 import time
 import datetime
+import json
 
 class Board:
 
@@ -33,7 +34,45 @@ class Board:
 
         return board, reset_dict
 
+class MultiGameMemory: # mgm
 
+    def __init__(self, output_file_name):
+        self.output_file_name = output_file_name
+        self.memories = []
+
+    def store_game_memory(self, single_game_memory):
+        self.memories.append(single_game_memory) #TODO: understand if too many dimensions in matrix
+
+    def convert_memory_to_json(self):
+        """
+        Turn memories into a json object
+        """
+        # first convert to pandas dataframe (probably a better way to do this)
+
+        # then convert dataframe object to json object
+
+        # dump
+        json_obj = np.nan
+
+        # eventually I need to store in a json file or some object I can easily store and keep adding to
+        # a - i (left to right), 1 - 9 (bottom to top)
+        # board_positions = []
+        # cols = ['a','b','c','d','e','f','g','h','i']
+        # for c in cols:
+        #     for r in np.arange(1,10,1):
+        #         board_positions.append(c + str(r))
+        # data_columns = ['run_dttm','game_nbr', 'turn_nbr', 'is_done']
+        # data_columns += board_positions
+        # data_columns += ['is_defender_winner']
+
+        return json_obj
+
+    def output_memory_json(self):
+        """
+        Dump json object using filename
+        """
+        json_obj = convert_memory_to_json()
+        json.dump(self.output_file_name)
 
 
 class Hnefatafl:
@@ -80,7 +119,7 @@ class Hnefatafl:
 
     def choose_piece(self):
         """
-        Figure out 
+        Choose which piece to move - will need to rethink this in the future
         TODO: Need to figure out how we'll select pieces that aren't random
         """
         if self.is_attacker_turn:
@@ -159,7 +198,6 @@ class Hnefatafl:
     def update_board_after_capture(self, captured_piece_locations):
         """
         Update the board to replace any captured peices with 0 location
-        TODO: Should I store the captured pieces somewhere?
         """
         for loc in captured_piece_locations:
             piece_type = self.board[loc]
@@ -268,13 +306,38 @@ class Hnefatafl:
         else:
             return False
 
+    def remember(self, run_dttm, game_nbr, turn_nbr, is_done, winner):
+        """
+        Store the data of an ongoing game by each turn
+        Can use this later to train our model
+        """
+        board_pieces = self.board.flatten().tolist()
+
+        row = [run_dttm, game_nbr, turn_nbr, is_done]
+        row += board_pieces
+        row += [winner]
+
+        self.memory.append(row)
+
+    def update_game_outcome(self, winner):
+        """
+        At end of the game update the entire outcome to either 1.0 if defenders win or 0.0 if attackers win
+        """
+        print('Winner: ', winner)
+        print(self.memory[0])
+        for row in self.memory:
+            row[-1] = winner
+        print(self.memory[0])
 
 
 if __name__ == '__main__':
 
     MAX_GAMES = 2
-    MAX_TURNS = 2000
+    MAX_TURNS = 1700
     RUN_DTTM = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+    RUN_LOG_NAME = 'data/train_data_' + datetime.datetime.now().strftime('%Y%m%d%H%M') + '.json'
+
+    mgm = MultiGameMemory(RUN_LOG_NAME)
 
     for game_nbr in range(MAX_GAMES):
 
@@ -299,8 +362,7 @@ if __name__ == '__main__':
             # loop until you find a piece with legal moves
             n_legal_moves = 0
             while n_legal_moves == 0:
-                move_from = game.choose_piece() # must be here?
-                # TODO: Fix below for king (2.0 possible moves) above you append the 4,4 position to possible moves
+                move_from = game.choose_piece()
                 moves_to = game.check_legal_moves(move_from) # all possible locations that can be moved to
                 n_legal_moves = len(moves_to)
 
@@ -308,23 +370,26 @@ if __name__ == '__main__':
             print('Move piece', game.board[move_from], 'from', move_from, 'to', move_to)
             game.update_board(move_from, move_to)
 
-            if game.is_attacker_turn:
+            if turn == MAX_TURNS:
+                is_done = True
+                # do not store the outcome of this game for future use (maybe a bad idea)?
+            elif game.is_attacker_turn:
                 is_done = game.check_king_capture()
                 if is_done:
                     winner = 0.0
-                    #game.update_game_outcome(winner)
+                    game.update_game_outcome(winner)
+                    mgm.store_game_memory(game.memory)
                     print(f'Congratulations! Attackers have won in {turn} turns!')
-            elif turn == MAX_TURNS:
-                is_done = True
             else:
                 is_done = game.check_king_win()
                 if is_done:
                     winner = 1.0
-                    #game.update_game_outcome(winner)
+                    game.update_game_outcome(winner)
+                    mgm.store_game_memory(game.memory)
                     print(f'Congratulations! Defenders have won in {turn} turns!')
 
             game.check_opponent_capture(move_from, move_to)
-            #game.remember(run_dttm, game_nbr, turn, is_done, winner)
+            game.remember(RUN_DTTM, game_nbr, turn, is_done, winner)
             game.change_turn()
             turn += 1
 
@@ -338,12 +403,14 @@ if __name__ == '__main__':
         print(f'------------------------  End of game: {game_nbr}! ------------------------')
         print('--------------------------------------------------------------------')
 
+    #mgm.output_memory_json()
+
 
 #### Notes below:
 
     # TODO: Store features
         # For each turn store these: Game_nbr, turn nbr, board features (What occupies each location on the board?)
-        # At end of each game update the
+        # At end of each game update the winner column (min/max)
         # At the end of each game:
             # only keep the game record if it results in a win for a single opponent (or maybe keep draws as a 0.0) ?
             # if one of the opponents win update the win or loss column
