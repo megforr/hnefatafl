@@ -3,6 +3,7 @@ import random
 import time
 import datetime
 import json
+import pandas as pd
 
 class Board:
 
@@ -41,39 +42,35 @@ class MultiGameMemory: # mgm
         self.memories = []
 
     def store_game_memory(self, single_game_memory):
-        self.memories.append(single_game_memory) #TODO: understand if too many dimensions in matrix
+        for row in single_game_memory:
+            self.memories.append(row)
 
     def convert_memory_to_json(self):
         """
         Turn memories into a json object
         """
-        # first convert to pandas dataframe (probably a better way to do this)
+        # column names: a - i (left to right), 1 - 9 (bottom to top)
+        board_positions = []
+        cols = ['a','b','c','d','e','f','g','h','i']
+        for c in cols:
+            for r in np.arange(1,10,1):
+                board_positions.append(c + str(r))
+        data_columns = ['run_dttm','game_nbr', 'turn_nbr', 'is_done']
+        data_columns += board_positions
+        data_columns += ['is_defender_winner']
 
-        # then convert dataframe object to json object
-
-        # dump
-        json_obj = np.nan
-
-        # eventually I need to store in a json file or some object I can easily store and keep adding to
-        # a - i (left to right), 1 - 9 (bottom to top)
-        # board_positions = []
-        # cols = ['a','b','c','d','e','f','g','h','i']
-        # for c in cols:
-        #     for r in np.arange(1,10,1):
-        #         board_positions.append(c + str(r))
-        # data_columns = ['run_dttm','game_nbr', 'turn_nbr', 'is_done']
-        # data_columns += board_positions
-        # data_columns += ['is_defender_winner']
-
-        return json_obj
+        # first convert to pandas dataframe then to json object
+        output_data = pd.DataFrame(data=self.memories, columns=data_columns)
+        output_data = output_data.to_json()
+        return output_data
 
     def output_memory_json(self):
         """
-        Dump json object using filename
+        Store the multi-game memory as a json object
         """
-        json_obj = convert_memory_to_json()
-        json.dump(self.output_file_name)
-
+        output_data = self.convert_memory_to_json()
+        with open(self.output_file_name,'w') as outfile:
+            json.dump(output_data, outfile)
 
 class Hnefatafl:
 
@@ -110,7 +107,7 @@ class Hnefatafl:
                         if element == 0: # can only move to a position where there isn't already a piece
                             move_to = (row, col)  # tuple of possible move locations
                             self.possible_moves_dict[move_from].append(move_to)
-                        elif piece_type == 1 and element == 4: # if piece is king and location = safe corner
+                        elif piece_type == 1. and element == 4.: # if piece is king and location = safe corner
                             move_to = (row, col)  # tuple of possible move locations
                             self.possible_moves_dict[move_from].append(move_to)
                         else:
@@ -123,18 +120,21 @@ class Hnefatafl:
         TODO: Need to figure out how we'll select pieces that aren't random
         """
         if self.is_attacker_turn:
-            print('Attackers turn')
+            #print('Attackers turn')
             possible_pieces = self.pieces[3.0].copy()
         else:
-            print('Defenders turn')
+            #print('Defenders turn')
             possible_pieces = self.pieces[2.0].copy() # must copy or you accidentally append the king location to 2.0
             possible_pieces.append(self.pieces[1.0][0])
 
-        piece = random.sample(possible_pieces, 1) # randomly select pieces
+        #piece = random.sample(possible_pieces, 1) # randomly select pieces // try switching to random.choice
+        piece = random.choice(possible_pieces)  # randomly select pieces // try switching to random.choice
         # print('Selected from: ', possible_pieces)
         # print('Piece selected: ', piece)
 
-        return piece[0]
+        #return piece[0] # matches with random.sample
+        return piece # matches with random.choice
+
 
     def check_legal_moves(self, move_from):
         """
@@ -148,8 +148,6 @@ class Hnefatafl:
             if not ((move_from[0] - move_to[0] == 0) or (move_from[1] - move_to[1] == 0)): # if not up/down/left/right then move from list
                 legal_moves_to = [x for x in legal_moves_to if x != move_to] # keep all moves except the one eliminated
 
-        #print('Revision 1 - Only N|S|E|W moves: ', legal_moves_to)
-
         # 2. drop any moves where a piece is obstructing the path (all piece type between point A to point B)
         for move_to in legal_moves_to:
             #print('Testing move_to: ', move_to)
@@ -158,11 +156,16 @@ class Hnefatafl:
             col_min = min(move_from[1], move_to[1])
             col_max = max(move_from[1], move_to[1])
             move_trajectory = self.board[row_min:row_max+1, col_min:col_max+1].flatten() # do we need to flatten results
-            #print('Move trajectory before sort: ', move_trajectory)
             move_trajectory.sort()
+
+            # TODO: Need to fix this for king and safe_spots = 4.0
             try:
-                if move_trajectory[-2] > 0: # if second largest element in array > 0, then the path isn't clear
+                if self.board[move_from] == 1. and move_trajectory[-1] == 4.: # if king and moving to safe_spot
+                    continue # do not remove from legal moves list
+                elif move_trajectory[-2] > 0: # if second largest element in array > 0, then the path isn't clear
                     legal_moves_to = [x for x in legal_moves_to if x != move_to]  # keep all moves except the one eliminated
+                else:
+                    pass
             except:
                 if np.max(move_trajectory) > 0: # if single item array only do a max
                     legal_moves_to = [x for x in legal_moves_to if x != move_to]  # keep all moves except the one eliminated
@@ -170,12 +173,38 @@ class Hnefatafl:
 
         return legal_moves_to
 
-    def choose_move(self, moves_to):
+    def choose_move(self, move_from, moves_to):
         """
         Randomly choose a move - will have to update later
+        EXCEPT: Force move, if king is in line with a safe spot then make them end the game
+
+        move_from:: tuple of piece you are moving
+        moves_to:: list of tuples that are the legal moves the chosen piece can move to
+        returns move_to:: tuple of location the piece was chosen to move to
         """
-        move_to = random.sample(moves_to, 1) # randomly select an endpoint
-        return move_to[0]
+        # move_to = random.sample(moves_to, 1) # first way - but finally started failing
+        # return move_to[0]
+
+        # orig way that works below
+        move_to = random.choice(moves_to)
+
+        ### Below: For now, force games to end. If king selected, and there is a safe spot in its path, choose that action to win
+        # move_to_piece_types = [self.board[x] for x in moves_to]
+        # # if self.board[move_from] == 1.0:
+        # #     print('King Move')
+        # #     print(move_to_piece_types)
+        # #     print(self.board)
+        #
+        # if self.board[move_from] == 1.0 and max(move_to_piece_types) == 4.0:
+        #     safe_spots = []
+        #     for idx, val in enumerate(move_to_piece_types):
+        #         if val == 4.0:
+        #             safe_spots.append(idx)
+        #     move_to = moves_to[safe_spots[0]]
+        # else:
+        #     move_to = random.choice(moves_to)
+
+        return move_to
 
     def change_turn(self):
         if self.is_attacker_turn:
@@ -323,17 +352,14 @@ class Hnefatafl:
         """
         At end of the game update the entire outcome to either 1.0 if defenders win or 0.0 if attackers win
         """
-        print('Winner: ', winner)
-        print(self.memory[0])
+        print('\nWinner: ', winner)
         for row in self.memory:
             row[-1] = winner
-        print(self.memory[0])
-
 
 if __name__ == '__main__':
 
-    MAX_GAMES = 2
-    MAX_TURNS = 1700
+    MAX_GAMES = 50
+    MAX_TURNS = 1000
     RUN_DTTM = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
     RUN_LOG_NAME = 'data/train_data_' + datetime.datetime.now().strftime('%Y%m%d%H%M') + '.json'
 
@@ -345,6 +371,7 @@ if __name__ == '__main__':
         start = time.time()
         is_done = False
         winner = 0.0
+        completed_games = 0
 
         game = Hnefatafl(board_size=9)
 
@@ -355,8 +382,11 @@ if __name__ == '__main__':
         #for turn in range(MAX_TURNS):
         turn = 1
         while not is_done:
-            print('Current turn: ', turn)
-            game.render()
+
+            if turn % 1000 == 0:
+                print('Current turn: ', turn)
+                #game.render()
+
             game.possible_moves() # get all possible moves for turn with pieces on board
 
             # loop until you find a piece with legal moves
@@ -366,8 +396,8 @@ if __name__ == '__main__':
                 moves_to = game.check_legal_moves(move_from) # all possible locations that can be moved to
                 n_legal_moves = len(moves_to)
 
-            move_to = game.choose_move(moves_to) # randomly select where to move piece to
-            print('Move piece', game.board[move_from], 'from', move_from, 'to', move_to)
+            move_to = game.choose_move(move_from, moves_to) # randomly select where to move piece to
+            #print('Move piece', game.board[move_from], 'from', move_from, 'to', move_to)
             game.update_board(move_from, move_to)
 
             if turn == MAX_TURNS:
@@ -377,6 +407,7 @@ if __name__ == '__main__':
                 is_done = game.check_king_capture()
                 if is_done:
                     winner = 0.0
+                    completed_games += 1
                     game.update_game_outcome(winner)
                     mgm.store_game_memory(game.memory)
                     print(f'Congratulations! Attackers have won in {turn} turns!')
@@ -384,14 +415,16 @@ if __name__ == '__main__':
                 is_done = game.check_king_win()
                 if is_done:
                     winner = 1.0
+                    completed_games += 1
                     game.update_game_outcome(winner)
                     mgm.store_game_memory(game.memory)
                     print(f'Congratulations! Defenders have won in {turn} turns!')
 
-            game.check_opponent_capture(move_from, move_to)
-            game.remember(RUN_DTTM, game_nbr, turn, is_done, winner)
-            game.change_turn()
-            turn += 1
+            if not is_done:
+                game.check_opponent_capture(move_from, move_to)
+                game.remember(RUN_DTTM, game_nbr, turn, is_done, winner)
+                game.change_turn()
+                turn += 1
 
         game.render()
         print('Time to run: ', round(time.time() - start,4), ' seconds.')
@@ -403,10 +436,16 @@ if __name__ == '__main__':
         print(f'------------------------  End of game: {game_nbr}! ------------------------')
         print('--------------------------------------------------------------------')
 
-    #mgm.output_memory_json()
+    print('Number of completed games: ', completed_games)
+    if completed_games > 0:
+        print()
+        mgm.output_memory_json()
 
 
 #### Notes below:
+
+    #TODO: Need to get the games to complete
+        # so force the rule where if the king is in line with a safe spot then force it to terminate
 
     # TODO: Store features
         # For each turn store these: Game_nbr, turn nbr, board features (What occupies each location on the board?)
