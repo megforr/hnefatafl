@@ -358,7 +358,7 @@ class Hnefatafl:
 
 if __name__ == '__main__':
 
-    MAX_GAMES = 50
+    MAX_GAMES = 100
     MAX_TURNS = 1000
     RUN_DTTM = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
     RUN_LOG_NAME = 'data/train_data_' + datetime.datetime.now().strftime('%Y%m%d%H%M') + '.json'
@@ -444,16 +444,13 @@ if __name__ == '__main__':
 
 #### Notes below:
 
-    #TODO: Need to get the games to complete
-        # so force the rule where if the king is in line with a safe spot then force it to terminate
-
     # TODO: Store features
-        # For each turn store these: Game_nbr, turn nbr, board features (What occupies each location on the board?)
-        # At end of each game update the winner column (min/max)
+        # DONE: For each turn store these: Game_nbr, turn nbr, board features (What occupies each location on the board?)
+        # DONE: At end of each game update the winner column (min/max)
         # At the end of each game:
-            # only keep the game record if it results in a win for a single opponent (or maybe keep draws as a 0.0) ?
-            # if one of the opponents win update the win or loss column
-    # TODO: Maybe need to output at the end of each run to a file that I can store for a long time. Or else will lose all info each run
+            # DONE: only keep the game record if it results in a win for a single opponent (or maybe keep draws as a 0.0) ?
+            # DONE: if one of the opponents win update the win or loss column
+        # DONE: At end of multi-game runs store the data in a json you can use the train later
 
     # TODO: Learning strategy
         # How does the agent start to learn from the positions you are in
