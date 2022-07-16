@@ -2,6 +2,10 @@ import numpy as np
 import random
 import time
 
+"""
+This is a backup of the random selfplay code 
+"""
+
 class Board:
 
     def __init__(self, board_size):
@@ -31,7 +35,6 @@ class Board:
                 board[loc] = piece_type
 
         return board, reset_dict
-
 
 
 

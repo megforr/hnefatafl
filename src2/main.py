@@ -5,6 +5,10 @@ import datetime
 import json
 import pandas as pd
 
+"""
+This file will generate random self play and store the output of the games in the /data folder 
+"""
+
 class Board:
 
     def __init__(self, board_size):
@@ -335,14 +339,14 @@ class Hnefatafl:
         else:
             return False
 
-    def remember(self, run_dttm, game_nbr, turn_nbr, is_done, winner):
+    def remember(self, run_dttm, game_nbr, turn_nbr, done, winner):
         """
         Store the data of an ongoing game by each turn
         Can use this later to train our model
         """
         board_pieces = self.board.flatten().tolist()
 
-        row = [run_dttm, game_nbr, turn_nbr, is_done]
+        row = [run_dttm, game_nbr, turn_nbr, done]
         row += board_pieces
         row += [winner]
 
@@ -358,30 +362,29 @@ class Hnefatafl:
 
 if __name__ == '__main__':
 
-    MAX_GAMES = 100
+    MAX_GAMES = 10
     MAX_TURNS = 1000
     RUN_DTTM = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
     RUN_LOG_NAME = 'data/train_data_' + datetime.datetime.now().strftime('%Y%m%d%H%M') + '.json'
 
     mgm = MultiGameMemory(RUN_LOG_NAME)
 
+    completed_games = 0
+
     for game_nbr in range(MAX_GAMES):
 
-        print('Game: ', game_nbr)
         start = time.time()
-        is_done = False
+        done = False
         winner = 0.0
-        completed_games = 0
-
         game = Hnefatafl(board_size=9)
 
         print('\n--------------------------------------------------------------------')
-        print('------------------------  Game has started! ------------------------')
+        print(f'------------------------  GAME START: {game_nbr} ------------------------')
         print('--------------------------------------------------------------------')
 
         #for turn in range(MAX_TURNS):
         turn = 1
-        while not is_done:
+        while not done:
 
             if turn % 1000 == 0:
                 print('Current turn: ', turn)
@@ -401,28 +404,28 @@ if __name__ == '__main__':
             game.update_board(move_from, move_to)
 
             if turn == MAX_TURNS:
-                is_done = True
+                done = True
                 # do not store the outcome of this game for future use (maybe a bad idea)?
             elif game.is_attacker_turn:
-                is_done = game.check_king_capture()
-                if is_done:
+                done = game.check_king_capture()
+                if done:
                     winner = 0.0
                     completed_games += 1
                     game.update_game_outcome(winner)
                     mgm.store_game_memory(game.memory)
                     print(f'Congratulations! Attackers have won in {turn} turns!')
             else:
-                is_done = game.check_king_win()
-                if is_done:
+                done = game.check_king_win()
+                if done:
                     winner = 1.0
                     completed_games += 1
                     game.update_game_outcome(winner)
                     mgm.store_game_memory(game.memory)
                     print(f'Congratulations! Defenders have won in {turn} turns!')
 
-            if not is_done:
+            if not done:
                 game.check_opponent_capture(move_from, move_to)
-                game.remember(RUN_DTTM, game_nbr, turn, is_done, winner)
+                game.remember(RUN_DTTM, game_nbr, turn, done, winner)
                 game.change_turn()
                 turn += 1
 
@@ -433,10 +436,10 @@ if __name__ == '__main__':
         print('Captured attacker pieces: ', game.captured_attacker_pieces)
 
         print('\n--------------------------------------------------------------------')
-        print(f'------------------------  End of game: {game_nbr}! ------------------------')
+        print(f'------------------------  GAME END: {game_nbr} ------------------------')
         print('--------------------------------------------------------------------')
 
-    print('Number of completed games: ', completed_games)
+    print(f'Number of completed games: {completed_games} out of {MAX_GAMES} ({completed_games/MAX_GAMES}%)')
     if completed_games > 0:
         print()
         mgm.output_memory_json()

@@ -1,5 +1,5 @@
 '''
-Do some summary statistics about data
+Do some summary statistics about training data
 '''
 
 import numpy as np
@@ -9,8 +9,6 @@ import datetime
 import json
 import pandas as pd
 import os
-
-#df = pd.DataFrame()
 
 directory = 'data'
 for idx, filename in enumerate(os.listdir(directory)):
@@ -34,6 +32,10 @@ tmp = df.groupby(['run_dttm','game_nbr']).agg(winner=('is_defender_winner','max'
 
 print(tmp.head(10))
 
-print(tmp.shape) # 999 games
-print(tmp['winner'].sum()) #988 / 999 attackers win
-print(np.mean(tmp['num_turns'])) # avg number of turns in random play = 228
+
+
+print('Total Games: ', tmp.shape[0]) # 999 games
+print('Total defenders wins: ', tmp['winner'].sum()) #988 / 999 attackers win
+print('Total attacker wins: ', tmp.shape[0] - tmp['winner'].sum())
+print('Pct Defender Wins: ', np.round(tmp['winner'].sum() / (tmp.shape[0] - tmp['winner'].sum()),2), '%')
+print('Avg number of turns through random self-play', np.mean(tmp['num_turns'])) # avg number of turns in random play = 228

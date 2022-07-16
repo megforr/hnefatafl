@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "hnefatafl"
+version = "0.1.0"
+description = ""
+authors = ["megforr <megtabler27@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+numpy = "^1.23.1"
+tensorflow = "^2.9.1"
+pandas = "^1.4.3"
+scikit-learn = "^1.1.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
