@@ -362,7 +362,7 @@ class Hnefatafl:
 
 if __name__ == '__main__':
 
-    MAX_GAMES = 10
+    MAX_GAMES = 100
     MAX_TURNS = 1000
     RUN_DTTM = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
     RUN_LOG_NAME = 'data/train_data_' + datetime.datetime.now().strftime('%Y%m%d%H%M') + '.json'
@@ -411,6 +411,7 @@ if __name__ == '__main__':
                 if done:
                     winner = 0.0
                     completed_games += 1
+                    game.remember(RUN_DTTM, game_nbr, turn, done, winner) # testing this add 
                     game.update_game_outcome(winner)
                     mgm.store_game_memory(game.memory)
                     print(f'Congratulations! Attackers have won in {turn} turns!')
@@ -419,6 +420,7 @@ if __name__ == '__main__':
                 if done:
                     winner = 1.0
                     completed_games += 1
+                    game.remember(RUN_DTTM, game_nbr, turn, done, winner) # testing this add 
                     game.update_game_outcome(winner)
                     mgm.store_game_memory(game.memory)
                     print(f'Congratulations! Defenders have won in {turn} turns!')

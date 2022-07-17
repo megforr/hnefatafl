@@ -17,7 +17,7 @@ import pandas as pd
 import os
 import glob
 import numpy as np
-#import tensorflow as tf -> Need to get this working
+import tensorflow as tf 
 from sklearn.model_selection import train_test_split
 
 
@@ -41,7 +41,7 @@ def convert_dict_to_dataframe(data_dict):
 #####################################################################################
 ### Step 1: Import files from train location
 #####################################################################################
-num_files_to_import = 5
+num_files_to_import = 3
 train_files = os.listdir(os.path.join(os.getcwd(), 'data'))
 for idx, file in enumerate(train_files[0:num_files_to_import]):
     if file.endswith('.json'):
@@ -54,24 +54,15 @@ for idx, file in enumerate(train_files[0:num_files_to_import]):
         pass
 
 ### Single file import
-# file_name = 'data/train_data_202205081942.json'
+# file_name = 'data/train_data_202207161945.json'
 # df = convert_dict_to_dataframe(import_json(file_name))
 
-# print(df.shape)
-# print(df.head())
-
-print(df['is_defender_winner'].sum())
-print(df['is_done'].sum())
+print(df.shape)
+print(df.head())
 
 #####################################################################################
 ### Step 1.5: Transform 1 board state into a print statement that you can see
 #####################################################################################
-
-game = 0
-turn = 1 
-run_dttm = '08-05-2022 19:55:18'
-row = df[(df['game_nbr'] == game) & (df['turn_nbr'] == turn) & (df['run_dttm'] == run_dttm)].copy() 
-print(row)
 
 def render_board_from_df(row):
     """ Take row from dataframe and render so you can visualize the game board
@@ -84,7 +75,13 @@ def render_board_from_df(row):
     board = board_pos.reshape((board_size, board_size))
     print(board, '\n')
 
-render_board_from_df(row)
+game = 1
+turns = [1,2,3]
+run_dttm = '16-07-2022 19:57:05'
+for turn in turns: 
+    print('Turn nbr: ', turn)
+    row = df[(df['game_nbr'] == game) & (df['turn_nbr'] == turn) & (df['run_dttm'] == run_dttm)].copy() 
+    render_board_from_df(row)
 
 
 #####################################################################################
@@ -119,7 +116,7 @@ def data_preprocessing(df):
     # To estimate the probability of winning for attackers do (1 - prob_defender_win)
     y_cols = 'is_defender_winner'
     # TODO: Below, in the dataframe there is no part of the dataframe where is_done = True. Need to solve this later. 
-    df['is_defender_winner'] = np.where(df['is_done'] == True, 'is_defender_winner', 0.0)
+    df['is_defender_winner'] = np.where(df['is_done'] == True, df['is_defender_winner'], 0.0)
     #print(df['is_defender_winner'].sum())
     y_vals = df[y_cols].values
 
@@ -167,16 +164,15 @@ print('Output y-data shape: ', len(y))
 
 ### Step 2c: Split into train/test split 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-y_train, y_test = y_train.astype(float), y_test.astype(float)
 
 print('X train shape', len(x_train))
 print('Y train shape', len(y_train))
-
 print('X test shape', len(x_test))
 print('Y test shape', len(y_test))
 
-print('Train prob of winning: ', y_train.sum())
-print('Test prob of winning: ', y_test.sum())
+# these shoudl be fairly balanced
+print('TRAIN: Rows with wins / total rows: ', y_train.sum() / y_train.shape[0])
+print('TEST: Rows with wins / total rows: ', y_test.sum() / y_test.shape[0])
 
 
 
