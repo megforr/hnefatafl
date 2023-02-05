@@ -91,7 +91,7 @@ if __name__ == '__main__':
     #   store the game stats in a way that can be extracted later for training & analytics
     #   more sophisticated agents - predict the value of each available piece/legal move for current agent turn
     #       if non-random agents - must assign value to each possible move
-    # some kind of tree method to look ahead to predict the best possible next move
+    # some kind of tree method to look ahead to predict the best possible next move`
 
     # later later
     # figure out how to store the game information in a way that is valuable for learning
