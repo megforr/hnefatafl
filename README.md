@@ -1,38 +1,35 @@
 # <u>Hnefetafl</u> 
 * Ancient Viking Chess Board Game
-* Starting with  
-
 
 ### Directory
-* /game -> classes related to game
-  * board
-  * piece 
-* /agent -> different action selection policies
-  * BaseAgent
-  * RandomAgent
-  * MCTSAgent
-* /data -> data collected from different agents game plays
-* play.py -> runs the game with the specified agent 
+* <b>/game</b> 
+  * classes related to game play and tracking board state
+    * board - board state and game rules
+    * piece - piece classes
+* <b>/agent</b> 
+  * Action selection policies
+    * BaseAgent - parent agent class 
+    * RandomAgent - Assumes all legal moves have equal value, causing a random selection strategy
+* <b>/tree</b> 
+  * Methods to search game trajectories
+* <b>/utils</b> 
+  * helper functions
+* <b>play.py</b> 
+  * main function to run multiple games  
 
 ### Inspired by works here: 
 * Deep Reinforcement Learning, Hands On - Maxim Lapan
+* DeepMind, AlphaGo, AlphaZero, MuZero (Go, Chess, Shogi, Atari)
+  * https://www.deepmind.com/blog/muzero-mastering-go-chess-shogi-and-atari-without-rules
 * Meta Ai, CICIERO (Diplomacy) 
   * https://github.com/facebookresearch/diplomacy_cicero
 * Game board:
   * https://levelup.gitconnected.com/chess-python-ca4532c7f5a4
 
 ### Todo:
-* Read about pygame, structuring an OOO game, and making a gym environment
-* Can I interact with the game using pygame? 
-* Can I create an env similar to a gym environment?
+* Read about pygame 
+* Possibly rethink methods similar t0 gym
   * env.reset()
   * env.observation_space
-  * next_state, reward done, info = evn.step(action)
+  * next_state, reward, done, info = env.step(action)
   * env.action_space.n
-  * How do these render? 
-* What does pygame do? 
-* What was the old code that I used that made the Chess game only not in python
-  * The example I found on YouTube
-1. Read The book that Steven shared - good code structure 
-2. Read gym code to get an idea how to structure
-3. Read about pygame and what it offers
