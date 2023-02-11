@@ -12,8 +12,10 @@
   * Action selection policies
     * BaseAgent - parent agent class 
     * RandomAgent - Assumes all legal moves have equal value, causing a random selection strategy
-* <b>/tree</b> 
-  * Tree search methods to traverse game trajectories
+* <b>/search</b>
+  * Tree - Tree Search Methods to traverse game trajectories
+    * RandomRollout
+    * MCTS + UCT rollout
 * <b>/utils</b>
   * helper functions for the game 
   * game_data -> helper functions related to storing game data
