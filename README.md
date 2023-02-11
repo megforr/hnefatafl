@@ -1,5 +1,6 @@
 # <u>Hnefetafl</u> 
 * Ancient Viking Chess Board Game
+* Two player, zero-sum game
 * Fully observable, perfect information game
 
 ### Directory
