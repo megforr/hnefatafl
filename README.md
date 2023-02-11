@@ -4,8 +4,8 @@
 ### Directory
 * <b>/game</b> 
   * classes related to game play and tracking board state
-    * board - board state and game rules
-    * piece - piece classes
+    * [board](https://github.com/megforr/hnefatafl/blob/main/game/board.py) - board state and game rules
+    * [piece](https://github.com/megforr/hnefatafl/blob/main/game/piece.py) - piece classes
 * <b>/agent</b> 
   * Action selection policies
     * BaseAgent - parent agent class 
@@ -16,6 +16,7 @@
   * helper functions for the game 
   * game_data -> helper functions related to storing game data
     * ReplayBuffer -> class to store x num game data
+  * [encoder](https://github.com/megforr/hnefatafl/blob/main/utils/encoder.py) -> Encode/decode board states 
 * <b>play.py</b> 
   * main function to run multiple games  
 
