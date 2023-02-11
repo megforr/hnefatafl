@@ -1,5 +1,6 @@
 # <u>Hnefetafl</u> 
 * Ancient Viking Chess Board Game
+* Fully observable, perfect information game
 
 ### Directory
 * <b>/game</b> 
@@ -20,23 +21,34 @@
 * <b>play.py</b> 
   * main function to run multiple games  
 
-### Inspired by works here: 
-* Deep Reinforcement Learning, Hands On - Maxim Lapan
-* DeepMind, AlphaGo, AlphaZero, MuZero (Go, Chess, Shogi, Atari)
-  * Probably best to just start with AlphaZero since it has a single policy network to create a probability dist over moves
+### Inspired by works here:
+* DeepMind, AlphaZero variety
   * https://www.deepmind.com/blog/muzero-mastering-go-chess-shogi-and-atari-without-rules
   * https://arxiv.org/src/1911.08265v1/anc/pseudocode.py
   * https://arxiv.org/abs/1911.08265
   * https://medium.com/applied-data-science/how-to-build-your-own-muzero-in-python-f77d5718061a
-* Meta Ai, CICIERO (Diplomacy) 
-  * https://github.com/facebookresearch/diplomacy_cicero
+* [OpenSpiel package by DeepMind](https://github.com/deepmind/open_spiel)
+  * [OpenSpiel AlphaZero Doc](https://github.com/deepmind/open_spiel/blob/master/docs/alpha_zero.md)
+    * MCTS gets its prior and value from NN (not random rollouts)
+      * [AlphaZero Model Code](https://github.com/deepmind/open_spiel/blob/master/open_spiel/python/algorithms/alpha_zero/model.py)
+      * [MCTS Code](https://github.com/deepmind/open_spiel/blob/master/open_spiel/python/examples/mcts.py)
+      * [MCTS Code 2](https://github.com/deepmind/open_spiel/blob/master/open_spiel/python/algorithms/mcts.py) 
+  * [OpenSpiel MCTS](https://github.com/deepmind/open_spiel/blob/master/open_spiel/algorithms/mcts.cc)
+* [Meta Ai, CICIERO (Diplomacy)]((https://github.com/facebookresearch/diplomacy_cicero))
 * Game board:
   * https://levelup.gitconnected.com/chess-python-ca4532c7f5a4
+* Deep Reinforcement Learning, Hands On - Maxim Lapan
 
-### Todo:
-* Read about pygame 
-* Possibly rethink methods similar t0 gym
-  * env.reset()
-  * env.observation_space
-  * next_state, reward, done, info = env.step(action)
-  * env.action_space.n
+### Components: 
+* Game rules - ~DONE
+* Actor - generate data via self-play using MCTS and a NN as an evaluator
+  * 2 <b>MCTCs</b> objects
+  * 1 shared NN <b>EVALUATOR</b>
+  * Plays self-play games
+* Learner - updates the network based on those games
+  * Pulls trajectories into a fixed size FIFO <b>REPLAY_BUFFER</b> via a queue
+  * Update step will sample minibatches from replay buffer
+  * Saves checkpoint
+  * Updates actors models
+  * Save stats in json file
+* Checkpoints

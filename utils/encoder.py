@@ -12,7 +12,7 @@ class GameStateEncoder:
 
     def encode(self, board_state):
         """
-        Encodes the game state
+        Binary encoder for the game state
         :param board: pass in current board state
         :return: encoded board state
         """
@@ -21,7 +21,7 @@ class GameStateEncoder:
 
     def decode(self, enc_board):
         """
-        Take the encoded board state and output the decoded board state.
+        Take the binary encoded board state and reconstruct the original decoded board state.
         :param enc_board:
         :return: decoded board state
         """
